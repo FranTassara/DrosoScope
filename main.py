@@ -7,7 +7,6 @@ volume imaging.
 
 import sys
 import os
-import time
 
 import qdarkstyle
 import numpy as np
@@ -15,9 +14,6 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QFileDialog
 from PyQt5.QtCore import QThread
 from pyqtgraph import RectROI, SignalProxy
-from tifffile import imwrite
-from skimage.registration import phase_cross_correlation
-from scipy.ndimage import gaussian_filter
 from pylablib.devices.Thorlabs.TLCamera import ThorlabsTLCamera
 
 from controllers.laser_488nm import OxxiusLaser488
@@ -28,8 +24,7 @@ from controllers.flipper import MFF101
 from controllers import camera_pco
 from controllers import daq
 
-from postprocessing.deskew import deskew, max_projection_z
-from config import HARDWARE_CONFIG, DEFAULT_CONFIG
+from config import HARDWARE_CONFIG
 from acquisition import (LiveViewThread, SerialDeviceInitThread,
                          FilterWheelInitThread, MultichannelSchedulerWorker)
 
