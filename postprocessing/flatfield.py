@@ -1,25 +1,25 @@
 """
-Flatfield correction para datos OPM.
+Flatfield correction for OPM data.
 
-Estima la no-uniformidad de iluminación a partir de un stack de imágenes crudas
-y aplica la corrección. No requiere GPU ni dependencias especiales.
+Estimates illumination non-uniformity from a raw image stack and applies
+the correction. No GPU or special dependencies required.
 
-Algoritmo:
+Algorithm:
 ----------
-1. Muestrea N frames aleatorios del stack.
-2. Calcula la MEDIANA por pixel (suprime la señal de la muestra).
-3. Suaviza el resultado con un filtro Gaussiano (iluminación lenta en espacio).
-4. Normaliza a [0.01, 1.0] para evitar división por cero.
-5. Corrige: corrected = (image - offset) / flatfield
+1. Randomly sample N frames from the stack.
+2. Compute the per-pixel MEDIAN (suppresses sample signal).
+3. Smooth the result with a Gaussian filter (illumination varies slowly in space).
+4. Normalize to [0.01, 1.0] to avoid division by zero.
+5. Apply: corrected = (image - offset) / flatfield
 
-Uso típico:
------------
-    from postprocess_flatfield import estimate_flatfield, apply_flatfield
+Typical usage:
+--------------
+    from postprocessing.flatfield import estimate_flatfield, apply_flatfield
 
-    # Estimar desde stack crudo (Z, Y, X)
+    # Estimate from raw stack (Z, Y, X)
     ff = estimate_flatfield(raw_stack, camera_offset=100)
 
-    # Aplicar a cada volumen
+    # Apply to each volume
     corrected = apply_flatfield(volume, ff, camera_offset=100)
 """
 

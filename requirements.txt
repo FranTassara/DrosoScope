@@ -1,0 +1,22 @@
+# DrosoScope dependencies
+# Install with: pip install -r requirements.txt
+#
+# Additional system-level requirements (Windows installers, not pip):
+#   - Thorlabs Kinesis  (filter wheel and flip mirrors)
+#   - NI-DAQmx drivers  (National Instruments PCIe-6363)
+#   - PCO SDK           (DLLs included in controllers/pco_sdk/)
+
+PyQt5
+pyqtgraph
+qdarkstyle
+numpy
+scipy
+scikit-image
+tifffile
+numba
+pyserial
+pylablib
+pythonnet
+
+# Optional: vectorial PSF model (improves deconvolution accuracy)
+# psfmodels

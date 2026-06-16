@@ -20,15 +20,15 @@ from skimage.registration import phase_cross_correlation
 from scipy.ndimage import gaussian_filter
 from pylablib.devices.Thorlabs.TLCamera import ThorlabsTLCamera
 
-from Controller.C_laser_488 import OxxiusLaser488
-from Controller.C_laser_561 import OxxiusLaser561
-from Controller.C_stage import AsiStage
-from Controller.C_filterWheel import FilterWheel
-from Controller.C_flipper import MFF101
-import Controller.C_pco_edge42
-import Controller.C_ni_PXIe
+from controllers.laser_488nm import OxxiusLaser488
+from controllers.laser_561nm import OxxiusLaser561
+from controllers.stage import AsiStage
+from controllers.filter_wheel import FilterWheel
+from controllers.flipper import MFF101
+from controllers import camera_pco
+from controllers import daq
 
-from deskew_ShepherdLab import deskew, max_projection_z
+from postprocessing.deskew import deskew, max_projection_z
 from config import HARDWARE_CONFIG, DEFAULT_CONFIG
 from acquisition import (LiveViewThread, SerialDeviceInitThread,
                          FilterWheelInitThread, MultichannelSchedulerWorker)
@@ -40,7 +40,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('OPM Control App')
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        ui_file = os.path.join(base_dir, 'MainApp_V3.ui')
+        ui_file = os.path.join(base_dir, 'ui', 'MainApp.ui')
         uic.loadUi(ui_file, self)
 
         # =====================================================================
@@ -787,7 +787,7 @@ class MainWindow(QMainWindow):
     # =========================================================================
     def connect_camera_pco(self):
         try:
-            self.camera = Controller.C_pco_edge42.Camera()
+            self.camera = camera_pco.Camera()
 
             # Populate GUI from camera state
             self.spinBox_exptime_PCO.setValue(int(self.camera.exposure_us / 1000))
@@ -1045,7 +1045,7 @@ class MainWindow(QMainWindow):
 
         if self.camera is None:
             try:
-                self.camera = Controller.C_pco_edge42.Camera()
+                self.camera = camera_pco.Camera()
                 self.camera_connected = True
                 print("[INFO] PCO camera connected for scanning")
             except Exception as e:
@@ -1054,7 +1054,7 @@ class MainWindow(QMainWindow):
 
         if self.ao is None:
             try:
-                self.ao = Controller.C_ni_PXIe.DAQ(
+                self.ao = daq.DAQ(
                     num_channels=HARDWARE_CONFIG['daq_num_channels'],
                     rate=HARDWARE_CONFIG['daq_rate'],
                 )

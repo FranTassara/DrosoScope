@@ -2,16 +2,16 @@
 OPM Acquisition Workers
 =======================
 
-Workers de adquisición desacoplados de la GUI.
+GUI-decoupled worker threads for camera acquisition and hardware control.
 
-Clases exportadas:
-    - LiveViewThread              — vista en vivo de la cámara
-    - SerialDeviceInitThread      — inicialización de dispositivos seriales
-    - FilterWheelInitThread       — inicialización de la rueda de filtros
-    - MultichannelSchedulerWorker — adquisición multicanal con scheduler temporal
+Exported classes:
+    - LiveViewThread              — real-time camera live view
+    - SerialDeviceInitThread      — serial device initialization (lasers, stage)
+    - FilterWheelInitThread       — filter wheel initialization
+    - MultichannelSchedulerWorker — multi-channel acquisition with temporal scheduler
 
-Todas las clases se comunican con la GUI exclusivamente mediante señales Qt
-(pyqtSignal). No importan ni dependen de ningún widget.
+All classes communicate with the GUI exclusively through Qt signals (pyqtSignal).
+They do not import or depend on any Qt widget.
 """
 
 import os
@@ -24,7 +24,7 @@ from skimage.registration import phase_cross_correlation
 from tifffile import imwrite
 
 from config import HARDWARE_CONFIG, DEFAULT_CONFIG
-from deskew_ShepherdLab import deskew, max_projection_z
+from postprocessing.deskew import deskew, max_projection_z
 
 
 # =============================================================================
@@ -32,9 +32,9 @@ from deskew_ShepherdLab import deskew, max_projection_z
 # =============================================================================
 
 class LiveViewThread(QThread):
-    """Thread para la vista en vivo de la cámara.
+    """Real-time camera live view thread.
 
-    Compatible con la cámara PCO y la Thorlabs.
+    Compatible with both PCO and Thorlabs camera drivers.
     """
     image_ready = pyqtSignal(np.ndarray)
 
@@ -78,9 +78,9 @@ class LiveViewThread(QThread):
 # =============================================================================
 
 class SerialDeviceInitThread(QThread):
-    """Thread genérico para inicializar dispositivos seriales (láseres, escenario).
+    """Generic thread for initializing serial devices (lasers, stage).
 
-    Llama a device.initialize() luego a device.idn() y emite el resultado.
+    Calls device.initialize() then device.idn() and emits the result string.
     """
     finished = pyqtSignal(str)
 
@@ -99,7 +99,7 @@ class SerialDeviceInitThread(QThread):
 # =============================================================================
 
 class FilterWheelInitThread(QThread):
-    """Thread para inicializar la rueda de filtros."""
+    """Thread for initializing the Thorlabs filter wheel."""
     finished = pyqtSignal(bool)
 
     def __init__(self, filter_wheel):
@@ -120,16 +120,16 @@ class FilterWheelInitThread(QThread):
 # =============================================================================
 
 class MultichannelSchedulerWorker(QObject):
-    """Worker de adquisición multicanal con scheduling temporal.
+    """Multi-channel acquisition worker with temporal scheduling.
 
-    Cada canal tiene su propio número de volúmenes e intervalo. Ambos canales
-    empiezan en t=0. Si dos canales coinciden, se adquieren secuencialmente.
+    Each channel has its own volume count and acquisition interval. Both channels
+    start at t=0. If two channels coincide in time, they are acquired sequentially.
 
     Signals
     -------
-    finished : emitida al terminar (o al ser detenida).
-    error    : emitida si ocurre una excepción no recuperable.
-    log_message : mensajes de estado para mostrar en la GUI.
+    finished    : emitted when acquisition completes or is stopped.
+    error       : emitted on an unrecoverable exception.
+    log_message : status messages for display in the GUI.
     """
     finished    = pyqtSignal()
     error       = pyqtSignal(str)

@@ -1,27 +1,27 @@
 """
-Deconvolución Richardson-Lucy para datos OPM.
+Richardson-Lucy deconvolution for OPM data.
 
-CPU-based usando scikit-image. No requiere GPU.
+CPU-based implementation using scikit-image. No GPU required.
 
 PSF:
 ----
-Se genera automáticamente con una aproximación Gaussiana 3D a partir de
-los parámetros del microscopio (pixel size, NA, longitud de onda).
+Automatically generated using a 3D Gaussian approximation from microscope
+parameters (pixel size, NA, wavelength).
 
-Si se tiene instalado `psfmodels` (pip install psfmodels), se usa automáticamente
-una PSF vectorial más precisa.
+If `psfmodels` is installed (pip install psfmodels), a more accurate
+vectorial PSF is used automatically.
 
-Uso típico:
------------
-    from postprocess_deconvolution import deconvolve_volume, generate_psf, load_experimental_psf
+Typical usage:
+--------------
+    from postprocessing.deconvolution import deconvolve_volume, generate_psf, load_experimental_psf
 
-    # Opción A: PSF experimental (desde postprocess_psf.py)
+    # Option A: experimental PSF (measured from fluorescent beads)
     psf = load_experimental_psf("beads_deskew_488_0_psf.tif")
 
-    # Opción B: PSF teórica (Gaussiana o vectorial si psfmodels está instalado)
+    # Option B: theoretical PSF (Gaussian, or vectorial if psfmodels is installed)
     psf = generate_psf(pixel_size_um=0.127, wavelength_nm=488, NA=1.1)
 
-    # Deconvolucionar un volumen deskewed (Z, Y, X)
+    # Deconvolve a deskewed volume (Z, Y, X)
     deconvolved = deconvolve_volume(deskewed, psf=psf, n_iter=15)
 
 Parámetros típicos para el sistema LSM:

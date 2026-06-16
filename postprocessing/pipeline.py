@@ -2,48 +2,48 @@
 OPM Post-processing Pipeline
 ==============================
 
-Cadena de post-procesamiento para datos adquiridos con App LSM:
+Post-processing chain for data acquired with DrosoScope:
 
-    [Raw TIFF] → Flatfield → Deconvolución → Deskew → Max Projection
+    [Raw TIFF] → Flatfield correction → Deconvolution → Deskew → Max Projection
 
-Cada paso es opcional. Se puede usar programáticamente o desde la terminal.
+Each step is optional and can be combined freely.
 
-Uso desde terminal:
+Command-line usage:
 -------------------
-    # Mínimo (solo deskew):
-    python postprocess.py datos/data_crop_488_0.tif --scan-range 70
+    # Minimum (deskew only):
+    python -m postprocessing.pipeline data/data_crop_488_0.tif --scan-range 70
 
-    # Con flatfield:
-    python postprocess.py datos/data_crop_488_0.tif --scan-range 70 --flatfield
+    # With flatfield correction:
+    python -m postprocessing.pipeline data/data_crop_488_0.tif --scan-range 70 --flatfield
 
-    # Con deconvolución (488 nm):
-    python postprocess.py datos/data_crop_488_0.tif --scan-range 70 --deconvolve --wavelength 488
+    # With deconvolution (488 nm):
+    python -m postprocessing.pipeline data/data_crop_488_0.tif --scan-range 70 --deconvolve --wavelength 488
 
-    # Pipeline completo:
-    python postprocess.py datos/data_crop_488_0.tif --scan-range 70 \\
-        --flatfield --deconvolve --wavelength 488 -o resultados/
+    # Full pipeline:
+    python -m postprocessing.pipeline data/data_crop_488_0.tif --scan-range 70 \\
+        --flatfield --deconvolve --wavelength 488 -o results/
 
-    # Procesar todos los TIFFs de un directorio:
-    python postprocess.py datos/ --scan-range 70 --flatfield --deconvolve
+    # Process all TIFFs in a directory:
+    python -m postprocessing.pipeline data/ --scan-range 70 --flatfield --deconvolve
 
-Uso programático:
------------------
-    from postprocess import postprocess
+Programmatic usage:
+-------------------
+    from postprocessing.pipeline import postprocess
 
     postprocess(
-        input_path    = "datos/data_crop_488_0.tif",
-        scan_range_um = 70.0,
-        do_flatfield   = True,
+        input_path       = "data/data_crop_488_0.tif",
+        scan_range_um    = 70.0,
+        do_flatfield     = True,
         do_deconvolution = True,
-        wavelength_nm  = 488,
+        wavelength_nm    = 488,
     )
 
-Parámetros fijos del sistema:
-------------------------------
-    theta_deg     = 41.0   (ángulo OPM)
-    pixel_size_um = 0.127  (PCO.edge 4.2 con objetivo actual)
+Fixed system parameters:
+-------------------------
+    theta_deg     = 41.0   (OPM oblique angle)
+    pixel_size_um = 0.127  (PCO.edge 4.2 with current objective)
     NA            = 1.1
-    camera_offset = 100    (fondo PCO)
+    camera_offset = 100    (PCO camera background offset)
 """
 
 import os
@@ -52,10 +52,10 @@ import argparse
 import numpy as np
 import tifffile
 
-from deskew_ShepherdLab_2024 import deskew, max_projection_z, estimate_output_size
-from postprocess_flatfield import (estimate_flatfield, estimate_flatfield_from_tiffs,
-                                   apply_flatfield, save_flatfield, load_flatfield)
-from postprocess_deconvolution import deconvolve_volume, generate_psf
+from .deskew import deskew, max_projection_z, estimate_output_size
+from .flatfield import (estimate_flatfield, estimate_flatfield_from_tiffs,
+                        apply_flatfield, save_flatfield, load_flatfield)
+from .deconvolution import deconvolve_volume, generate_psf
 
 
 # =============================================================================

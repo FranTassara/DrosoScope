@@ -9,7 +9,7 @@ from PySide6.QtGui import QImage, QPixmap
 
 # Importamos tu controlador (debe estar en la misma carpeta como C_pco_edge42.py)
 try:
-    from C_pco_edge42 import Camera, CameraError
+    from controllers.camera_pco import Camera, CameraError
 except ImportError:
     print("Error: No se encontró 'C_pco_edge42.py'. Asegúrate de que esté en la misma carpeta.")
     sys.exit(1)

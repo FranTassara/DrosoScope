@@ -1,16 +1,19 @@
 """
-Postprocesamiento interactivo: Crop + Deskew
-============================================
+Interactive post-processing: Crop + Deskew
+==========================================
 
-1. Seleccionás la carpeta con los archivos data_raw_*.tif
-2. Elegís la orientación del raw (se muestran 4 opciones para comparar)
-3. Se muestra la proyección máxima con la orientación elegida
-4. Dibujás un rectángulo para definir el ROI
-5. Confirmás los parámetros ópticos (ángulo, paso galvo, pixel size)
-6. Se aplica crop + deskew a todos los archivos de la carpeta
+Interactive GUI tool to crop and deskew raw OPM data.
 
-Uso:
-    python postprocess_crop_deskew.py
+Workflow:
+1. Select the folder containing data_raw_*.tif files.
+2. Choose the raw data orientation (4 options shown for comparison).
+3. Inspect the max projection with the selected orientation.
+4. Draw a rectangle to define the region of interest (ROI).
+5. Confirm optical parameters (angle, galvo step, pixel size).
+6. Crop + deskew is applied to all files in the folder.
+
+Usage:
+    python scripts/crop_deskew_interactive.py
 """
 
 import os
@@ -26,11 +29,11 @@ from matplotlib.widgets import RectangleSelector, RadioButtons
 # ──────────────────────────────────────────────────────────────────────────────
 # Imports del proyecto
 # ──────────────────────────────────────────────────────────────────────────────
-_ROOT = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # DrosoScope root
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-from deskew_ShepherdLab import deskew, max_projection_z
+from postprocessing.deskew import deskew, max_projection_z
 
 try:
     from config import DEFAULT_CONFIG
