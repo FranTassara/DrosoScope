@@ -1,0 +1,25 @@
+{
+    "piezo_serial": "44515714",
+    "piezo_channel": 1,
+    "camera_serial": "33339",
+    "exposure_us": 10000,
+    "roi": {
+        "x": 400,
+        "y": 575,
+        "width": 150,
+        "height": 100
+    },
+    "acquisition_interval_ms": 500,
+    "piezo_step_um": 1.0,
+    "slope_angle": -0.08420783458910332,
+    "slope_intensity": 9.76085714285748,
+    "pid_kp": 0.1,
+    "pid_ki": 0.01,
+    "pid_kd": 0.0,
+    "piezo_min_um": 50.0,
+    "piezo_max_um": 420.0,
+    "psf_method": "pca",
+    "deadband_nm": 50.0,
+    "control_mode": "angle",
+    "calib_save_format": "JSON"
+}
