@@ -294,6 +294,16 @@ QPushButton:disabled {
     border-color: #1c1c2e;
 }
 
+/* Botón de ayuda (?) */
+QPushButton#btn_help {
+    background-color: #313244;
+    color: #89b4fa;
+    border-radius: 12px;
+    font-weight: bold;
+    padding: 0px;
+}
+QPushButton#btn_help:hover { background-color: #45475a; border-color: #89b4fa; }
+
 /* Azul — conectar hardware */
 QPushButton#btn_connect {
     background-color: #152040;
@@ -459,6 +469,102 @@ class CalibrationPlotDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(canvas)
         layout.addWidget(btn_close)
+
+
+# ============================================================================
+# DIÁLOGO DE AYUDA
+# ============================================================================
+
+class HelpDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Guía de Operación")
+        self.setMinimumSize(600, 550)
+        self.setAttribute(Qt.WA_DeleteOnClose)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(10, 10, 10, 10)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QFrame.NoFrame)
+        scroll_area.setStyleSheet("background-color: #14141f;")
+
+        help_label = QLabel()
+        help_label.setTextFormat(Qt.RichText)
+        help_label.setWordWrap(True)
+        help_label.setOpenExternalLinks(True)
+        help_label.setStyleSheet("""
+            QLabel {
+                background-color: #14141f;
+                padding: 15px;
+                font-size: 10pt;
+            }
+            h3 {
+                color: #7aa2f7; /* acento azul */
+                font-size: 13pt;
+                font-weight: bold;
+                margin-top: 10px;
+                margin-bottom: 5px;
+                border-bottom: 1px solid #2e2e45;
+            }
+            h4 {
+                color: #9ece6a; /* verde */
+                font-size: 11pt;
+                font-weight: bold;
+                margin-top: 8px;
+                margin-bottom: 3px;
+            }
+            p, ol, ul { margin-bottom: 8px; }
+            ul, ol { margin-left: 20px; }
+            li { margin-bottom: 4px; }
+            code {
+                background-color: #1c1c2e;
+                color: #ff9e64; /* naranja */
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-family: "Consolas", "Courier New", monospace;
+            }
+        """)
+
+        help_text = """
+        <h3>Flujo de Interacción del Sistema</h3>
+
+        <h4>1. Configuración Inicial (Setup)</h4>
+        <ol>
+            <li>Conectar el hardware: Camara y Piezo. Decidir un ROI de trabajo adecuado para la cámara (idealmente centrado en el spot láser).</li>
+            <li>Ingresar las ganancias PID deseadas en el grupo <b>Parámetros de Control</b>.</li>
+            <li>En la pestaña de <i>Calibración</i>, presionar el botón <b>Ejecutar Calibración</b> para establecer la respuesta del sistema y la sensibilidad inicial del spot láser.</li>
+            <li>En la pestaña de <i>Autofoco</i>, presionar <b>Establecer Setpoint</b> para definir la posición actual del spot como la referencia de enfoque (punto cero).</li>
+        </ol>
+
+        <h4>2. Operación</h4>
+        <ol>
+            <li>La transmisión en tiempo real en el grupo de <b>Vista de Cámara</b> proporciona retroalimentación visual constante de la PSF (Point Spread Function).</li>
+            <li>Presionar el botón <b>INICIAR</b> para activar el lazo de control. El sistema corregirá automáticamente las derivas térmicas o mecánicas respecto al setpoint.</li>
+        </ol>
+
+        <h4>3. Ajustes y Recalibración</h4>
+        <ol>
+            <li><b>Actualización de parámetros:</b> Presionar el botón <code>DETENER</code> -> Ajustar las ganancias PID -> Presionar el botón <code>INICIAR</code>.</li>
+            <li><b>Recalibración del sistema:</b> En caso de ser necesario, presionar <code>DETENER</code> -> Presionar el botón <code>RESET</code> y repetir el proceso de <b>Configuración Inicial</b> para establecer una nueva posición de referencia.</li>
+        </ol>
+
+        <h3>Protocolo de Guardado de Datos</h3>
+        <ol>
+            <li><b>Calibración (JSON/CSV):</b> Se genera automáticamente al finalizar un barrido. El formato <code>JSON</code> es mandatorio si se desea recargar la curva de respuesta en sesiones futuras.</li>
+            <li><b>Log CSV:</b> Registra el historial completo de la sesión de autofoco (ideal para análisis de estabilidad a largo plazo).</li>
+            <li><b>Datos de Error:</b> Guarda únicamente los últimos 300 puntos visualizados en los gráficos de la interfaz.</li>
+        </ol>
+        """
+        help_label.setText(help_text)
+
+        scroll_area.setWidget(help_label)
+        main_layout.addWidget(scroll_area)
+
+        close_button = QPushButton("Cerrar")
+        close_button.clicked.connect(self.accept)
+        main_layout.addWidget(close_button, 0, Qt.AlignRight)
 
 
 # ============================================================================
@@ -654,10 +760,23 @@ class AutofocusGUI(QMainWindow):
         self._build_right_panel(right_layout)
 
     def _build_left_panel(self, layout):
+        header_layout = QHBoxLayout()
+        header_layout.addSpacing(24)  # Espaciador invisible para compensar el botón y centrar el título
+        header_layout.addStretch()
+        
         title = QLabel("Controles")
         title.setFont(QFont("Segoe UI", 12, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
+        header_layout.addWidget(title)
+        header_layout.addStretch()
+        
+        self.btn_global_help = QPushButton("?")
+        self.btn_global_help.setObjectName("btn_help")
+        self.btn_global_help.setFixedSize(24, 24)
+        self.btn_global_help.clicked.connect(self.show_global_save_help)
+        header_layout.addWidget(self.btn_global_help)
+
+        layout.addLayout(header_layout)
 
         self.tabs = QTabWidget()
         layout.addWidget(self.tabs, stretch=1)
@@ -1002,6 +1121,10 @@ class AutofocusGUI(QMainWindow):
 
         scroll.setWidget(container)
         self.tabs.addTab(scroll, "Calibración")
+
+    def show_global_save_help(self):
+        dialog = HelpDialog(self)
+        dialog.exec()
 
     def _update_control_mode(self, index):
         self.control_mode = self.combo_control_mode.itemData(index)
